@@ -41,7 +41,7 @@ function drawPoint(pixel:Point):void{
 var points: Point[] = [];
 
 let strenght = 9; //the distance of the push
-let widthScalar = 10; //the reach of the push
+let widthScalar = 10; //the reach of the pusherfdvgbnhunounuhhughbu
 
 function push(x:number,y:number,angle:number):void{
 
