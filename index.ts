@@ -89,6 +89,7 @@ const width = 70;
 const height = 55;
 const spacing = 1.2;
 
+
 for (let iY = 0; iY < height; iY++) {
     for (let iX = 0; iX < width; iX++) {
         points.push({x:iX*spacing,y:iY*spacing,line:iY});

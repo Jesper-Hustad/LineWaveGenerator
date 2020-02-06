@@ -32,6 +32,7 @@ var strenght = 9; //the distance of the push
 var widthScalar = 10; //the reach of the push
 
 
+
 //x,y point to push from and angle to push
 function push(x, y, angle) {
     points = points.map(p=> {
