@@ -48,7 +48,6 @@ function push(x:number,y:number,angle:number):void{
     points = points.map(p=>{
         
         const delta = dist(x,y,p)
-        // console.log("D:"+delta + "  f(D):"+ f(delta)*10);
 
         const vec:Point = addVector(angle,f(delta)*strenght);
 
