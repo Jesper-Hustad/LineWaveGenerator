@@ -3,9 +3,8 @@
         "module": "commonjs",
         "target": "ES3",
         "watch": true,
-        "lib": ["DOM","ES2017"]
-    },
-    "exclude": [
-        "node_modules"
-    ]
+        "lib": ["DOM","ES2017"],
+        "outDir": "out",
+        "sourceMap": true
+    }
 }

@@ -1,5 +1,6 @@
 console.log("hello wOOOrld")
 
+genPoint(2,3,4,1);
 
 //establish colors
 const backgroundColor = "#c4c4c4";
@@ -25,8 +26,6 @@ function reDraw():void{
 function clear(): void{
     c.clearRect(0, 0, canvas.width, canvas.height);
     c.fillStyle = backgroundColor;
-    c.fillRect(0, 0, canvas.width, canvas.height);
-    c.fillStyle = primaryColor;
 }
 
 function drawPixel(x:number,y:number): void{
@@ -53,7 +52,6 @@ function push(x:number,y:number,angle:number):void{
 
         return {x:p.x+vec.x,y:p.y+vec.y,line:p.line};
 
-        drawPoint(p);
     });
 }
 
@@ -79,7 +77,28 @@ interface Point {
 }
 
 
+function addLines():void{
+    const S = 10;
+    // c.beginPath();aa
+    // c.moveTo(points[0].x*S,points[0].y*S);
+    let prevLine = -1;
+    
+    let p:Point;
+    for (p of points) {
+        if(p.line!=prevLine){
+            c.stroke();
+            c.closePath();
+            c.beginPath();
+            c.moveTo(p.x*S,p.y*S);
+        }else{
+            c.lineTo(p.x*S,p.y*S);
+        }
+        prevLine = p.line;
+    }
 
+    c.stroke();
+
+}
 
 
 function genPoints():void{
@@ -89,14 +108,12 @@ const width = 70;
 const height = 55;
 const spacing = 1.2;
 
-
-for (let iY = 0; iY < height; iY++) {
-    for (let iX = 0; iX < width; iX++) {
-        points.push({x:iX*spacing,y:iY*spacing,line:iY});
+    for (let iY = 0; iY < height; iY++) {
+        for (let iX = 0; iX < width; iX++) {
+            points.push({x:iX*spacing,y:iY*spacing,line:iY});
+        }
     }
 }
-}
-
 
 
 let cycle = 0;
@@ -140,25 +157,16 @@ function button():void{
 
 
 
-function addLines():void{
-    const S = 10;
-    // c.beginPath();aa
-    // c.moveTo(points[0].x*S,points[0].y*S);
-    let prevLine = -1;
+
+function genPoint(wi:number,hi:number,col:number,row:number){
     
-    let p:Point;
-    for (p of points) {
-        if(p.line!=prevLine){
-            c.stroke();
-            c.closePath();
-            c.beginPath();
-            c.moveTo(p.x*S,p.y*S);
-        }else{
-            c.lineTo(p.x*S,p.y*S);
-        }
-        prevLine = p.line;
-    }
-
-    c.stroke();
-
+    Array.from(new Array((row)*(col)),(val,index)=>index+1).map(i => {
+        const x = i%wi;
+        const y = Math.ceil(i/wi);
+        return {x:x,y:y};
+    }).map(p => 
+        {return {x:p.x*(wi/col),y:p.y*(hi/row)};
+    })
 }
+
+//aasd
