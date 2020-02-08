@@ -29,6 +29,9 @@ var resolution = 0.5; //more resolution means higher quality, but slower. Betwee
 //for optimization, may want to use: Math.round(num * 100) / 100 to round to 2nd decimal!
 var simP = genPoints(width, height, Math.round(width * resolution), Math.round(height * resolution)).map(function (p) { return { p: { x: p.x, y: p.y }, line: p.y }; });
 var vecP = genPoints(width, height, collums, rows).map(function (p) { return { p: p, angle: Math.random() * 360, scalar: 8 }; });
+function generateSimP() {
+    return genPoints(width, height, Math.round(width * resolution), Math.round(height * resolution)).map(function (p) { return { p: { x: p.x, y: p.y }, line: p.y }; });
+}
 var strenght = 9; //the distance of the push
 var widthScalar = 10; //the reach of the pusher
 function f(x) {
@@ -42,9 +45,9 @@ function delta(p1, p2) {
     return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
 }
 var cutoff = 99999;
-function render(points) {
-    return simP.map(function (sim) {
-        var sumDelta = vecP.map(function (vec) {
+function render(points, vectors) {
+    return points.map(function (sim) {
+        var sumDelta = vectors.map(function (vec) {
             // console.log("I am running with point x:" + vec.p.x + " y:" + vec.p.y);
             var singleDelta = delta(vec.p, sim.p);
             if (singleDelta > cutoff) {
@@ -60,7 +63,7 @@ function sumPoints(a, b) {
     return { x: a.x + b.x, y: a.y + b.y };
 }
 function lines(points) {
-    console.log("Lenght is: " + points.length);
+    // console.log("Lenght is: " + points.length);
     // c.beginPath();
     // c.lineTo(points[0].p.x*GLOBAL_SPACING,points[0].p.y*GLOBAL_SPACING)
     addLines(points);
@@ -83,7 +86,7 @@ function addLines(points) {
     //so we end the previous line and begin a new one
     for (var _i = 0, points_1 = points; _i < points_1.length; _i++) {
         p = points_1[_i];
-        console.log(p.p);
+        // console.log(p.p);
         if (p.line != prevLine) {
             c.stroke();
             c.closePath();
@@ -95,6 +98,21 @@ function addLines(points) {
         prevLine = p.line;
     }
 }
+var resSlider = document.getElementById("resRange");
+var res = document.getElementById("res");
+res.innerHTML = resSlider.value;
+resSlider.oninput = function () {
+    res.innerHTML = this.value;
+    resolution = parseInt(this.value) / 100;
+    clear();
+    addLines(render(generateSimP(), vecP));
+};
+resSlider.onmouseup = function () {
+    resolution = parseInt(this.value) / 100;
+    console.log(resolution);
+    clear();
+    draw(render(generateSimP(), vecP));
+};
 var cycle = 0;
 function button() {
     switch (cycle) {
@@ -106,12 +124,12 @@ function button() {
         case 1:
             document.getElementById("info").innerHTML = "Now draw line between simP";
             clear();
-            draw(render(simP));
+            draw(render(simP, vecP));
             break;
         case 2:
             document.getElementById("info").innerHTML = "Et voila! Wave pattern generated";
             clear();
-            lines(render(simP));
+            lines(render(simP, vecP));
             break;
     }
     cycle = (cycle + 1) % 3;

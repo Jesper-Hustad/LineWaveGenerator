@@ -42,6 +42,10 @@ let resolution = 0.5; //more resolution means higher quality, but slower. Betwee
 var simP: sim[] = genPoints(width,height,Math.round(width*resolution),Math.round(height*resolution)).map(p =>{return {p:{x:p.x,y:p.y},line:p.y}});
 var vecP: vec[] = genPoints(width,height,collums,rows).map(p => {return {p:p,angle:Math.random() * 360,scalar:8}});
 
+function generateSimP():sim[]{
+    return genPoints(width,height,Math.round(width*resolution),Math.round(height*resolution)).map(p =>{return {p:{x:p.x,y:p.y},line:p.y}});
+}
+
 
 let strenght = 9; //the distance of the push
 let widthScalar = 10; //the reach of the pusher
@@ -63,10 +67,10 @@ function delta(p1:point,p2:point):number{
 
 let cutoff = 99999;
 
-function render(points:sim[]):sim[]{
-    return simP.map(sim => {
+function render(points:sim[],vectors:vec[]):sim[]{
+    return points.map(sim => {
         
-        const sumDelta = vecP.map(vec => {
+        const sumDelta = vectors.map(vec => {
             // console.log("I am running with point x:" + vec.p.x + " y:" + vec.p.y);
             const singleDelta = delta(vec.p,sim.p);
             if(singleDelta >cutoff){return {x:0,y:0};}
@@ -98,7 +102,7 @@ interface point {
 }
 
 function lines(points:sim[]){
-    console.log("Lenght is: " + points.length);
+    // console.log("Lenght is: " + points.length);
     // c.beginPath();
     // c.lineTo(points[0].p.x*GLOBAL_SPACING,points[0].p.y*GLOBAL_SPACING)
     addLines(points);
@@ -127,7 +131,7 @@ function addLines(points:sim[]):void{
     //if previous line is not the same as current line we must be at start of new line
     //so we end the previous line and begin a new one
     for (p of points) {
-        console.log(p.p);
+        // console.log(p.p);
 
         if(p.line!=prevLine){
             c.stroke();
@@ -142,7 +146,23 @@ function addLines(points:sim[]):void{
 
 }
 
+let resSlider = document.getElementById("resRange");
+let res = document.getElementById("res");
 
+res.innerHTML = resSlider.value;
+resSlider.oninput = function() {
+    res.innerHTML = this.value;
+    resolution = parseInt(this.value)/100;
+    clear();
+    addLines(render(generateSimP(),vecP));
+  }
+
+  resSlider.onmouseup = function(){
+    resolution = parseInt(this.value)/100;
+    console.log(resolution);
+    clear();
+    draw(render(generateSimP(),vecP));
+  }
 
 let cycle = 0;
 function button():void{
@@ -157,13 +177,12 @@ function button():void{
         case 1:
             document.getElementById("info").innerHTML = "Now draw line between simP";
             clear();
-            draw(render(simP));
+            draw(render(simP,vecP));
             break;
-
         case 2:
             document.getElementById("info").innerHTML = "Et voila! Wave pattern generated";
             clear();
-            lines(render(simP));
+            lines(render(simP,vecP));
             break;
 
     }
