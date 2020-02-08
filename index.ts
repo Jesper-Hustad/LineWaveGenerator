@@ -1,6 +1,5 @@
 console.log("hello wOOOrld")
 
-genPoint(2,3,4,1);
 
 //establish colors
 const backgroundColor = "#c4c4c4";
@@ -20,7 +19,7 @@ c.fillStyle = primaryColor;
 
 function reDraw():void{
     clear();
-    points.forEach(p=>drawPoint(p));
+    simP.forEach(p=>drawPoint(p));
 }
 
 function clear(): void{
@@ -37,14 +36,25 @@ function drawPoint(pixel:Point):void{
     drawPixel(pixel.x,pixel.y);
 }
 
-var points: Point[] = [];
+const height = 300;
+const width = 350;
+const rows = 6;
+const collums = 8;
+let resolution = 0.6; //more resolution means higher quality, but slower
+
+
+var simP: Point[] = genPoints(width,height,Math.round(width*resolution),Math.round(height*resolution)).map(p =>{return {x:p.x,y:p.y,line:p.y}});
+var vecP: vec[] = genPoints(width,height,collums,rows).map(p => {return {p:p,angle:Math.random() * 360,scalar:1}});
+
+
+
 
 let strenght = 9; //the distance of the push
 let widthScalar = 10; //the reach of the pusher
 
 function push(x:number,y:number,angle:number):void{
 
-    points = points.map(p=>{
+    simP = simP.map(p=>{
         
         const delta = dist(x,y,p)
 
@@ -76,15 +86,26 @@ interface Point {
     line: number;
 }
 
+interface vec {
+    p:point
+    angle:number;
+    scalar:number;
+}
+
+interface point {
+    x:number;
+    y:number;
+}
+
 
 function addLines():void{
     const S = 10;
     // c.beginPath();aa
-    // c.moveTo(points[0].x*S,points[0].y*S);
+    // c.moveTo(simP[0].x*S,simP[0].y*S);
     let prevLine = -1;
     
     let p:Point;
-    for (p of points) {
+    for (p of simP) {
         if(p.line!=prevLine){
             c.stroke();
             c.closePath();
@@ -100,34 +121,17 @@ function addLines():void{
 
 }
 
-
-function genPoints():void{
-points = [];
-//create points
-const width = 70;
-const height = 55;
-const spacing = 1.2;
-
-    for (let iY = 0; iY < height; iY++) {
-        for (let iX = 0; iX < width; iX++) {
-            points.push({x:iX*spacing,y:iY*spacing,line:iY});
-        }
-    }
-}
-
-
 let cycle = 0;
 function button():void{
     switch(cycle){
         case 0:
-            document.getElementById("info").innerHTML = "Push points to generate wave illusion";
+            document.getElementById("info").innerHTML = "Push simP to generate wave illusion";
 
-            genPoints();
             reDraw();
             break;
 
         case 1:
-            document.getElementById("info").innerHTML = "Now draw line between points";
+            document.getElementById("info").innerHTML = "Now draw line between simP";
             clear();
             push(20,30,30);
             push(70,30,190);
@@ -156,17 +160,19 @@ function button():void{
 }
 
 
+function genPointPlane(wi:number,hi:number):point[]{
+    return genPoints(wi,hi,wi,hi);
+}
 
-
-function genPoint(wi:number,hi:number,col:number,row:number){
+function genPoints(wi:number,hi:number,col:number,row:number):point[]{
     
-    Array.from(new Array((row)*(col)),(val,index)=>index+1).map(i => {
+    return Array.from(new Array((row)*(col)),(val,index)=>index+1).map(i => {
         const x = i%wi;
         const y = Math.ceil(i/wi);
         return {x:x,y:y};
     }).map(p => 
         {return {x:p.x*(wi/col),y:p.y*(hi/row)};
-    })
+    });
 }
 
 //aasd
