@@ -4,7 +4,5 @@
         "target": "ES3",
         "watch": true,
         "lib": ["DOM","ES2017"],
-        "outDir": "out",
-        "sourceMap": true
     }
 }

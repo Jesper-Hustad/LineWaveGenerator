@@ -1,4 +1,5 @@
 console.log("hello wOOOrld");
+var GLOBAL_SPACING = 10;
 //establish colors
 var backgroundColor = "#c4c4c4";
 var primaryColor = "#62858a";
@@ -10,140 +11,133 @@ c.canvas.height = 750;
 c.fillStyle = backgroundColor;
 c.fillRect(0, 0, canvas.width, canvas.height);
 c.fillStyle = primaryColor;
-function reDraw() {
-    clear();
-    points.forEach(function (p) { return drawPoint(p); });
-}
 function clear() {
     c.clearRect(0, 0, canvas.width, canvas.height);
     c.fillStyle = backgroundColor;
-    c.fillRect(0, 0, canvas.width, canvas.height);
-    c.fillStyle = primaryColor;
 }
 function drawPixel(x, y) {
-    var scalar = 10;
-    c.fillRect(x * scalar, y * scalar, scalar, scalar);
+    c.fillRect(x * GLOBAL_SPACING, y * GLOBAL_SPACING, GLOBAL_SPACING, GLOBAL_SPACING);
 }
-function drawPoint(pixel) {
-    drawPixel(pixel.x, pixel.y);
+function draw(simulatedPoints) {
+    simulatedPoints.forEach(function (s) { return drawPixel(s.p.x, s.p.y); });
 }
-var points = [];
+var height = 70;
+var width = 80;
+var rows = 4;
+var collums = 3;
+var resolution = 0.5; //more resolution means higher quality, but slower. Between {0,1}
+//for optimization, may want to use: Math.round(num * 100) / 100 to round to 2nd decimal!
+var simP = genPoints(width, height, Math.round(width * resolution), Math.round(height * resolution)).map(function (p) { return { p: { x: p.x, y: p.y }, line: p.y }; });
+var vecP = genPoints(width, height, collums, rows).map(function (p) { return { p: p, angle: Math.random() * 360, scalar: 8 }; });
 var strenght = 9; //the distance of the push
-var widthScalar = 10; //the reach of the push
-
-
-
-//x,y point to push from and angle to push
-function push(x, y, angle) {
-    points = points.map(p=> {
-
-        //distance between 2 points 
-        var delta = dist(x, y, p);
-
-        //create vector with angle, scalar from function: f(x)=1^(-x^2)
-        var vec = getVector(angle, f(delta) * strenght);
-        
-        //add vector to point
-        return { x: p.x + vec.x, y: p.y + vec.y, line: p.line };
-    });
-}
-
-//x,y point to push from and angle to push
-function verticalPush(x,str) {
-    points = points.map(p=> {
-
-        //create vector with angle, scalar from function: f(x)=1^(-x^2)
-        var vec = getVector(270, f(Math.abs(x-p.x)) * str);
-        
-        //add vector to point
-        return { x: p.x + vec.x, y: p.y + vec.y, line: p.line };
-    });
-}
-
+var widthScalar = 10; //the reach of the pusher
 function f(x) {
     var WSModifier = 1 + 1 / Math.pow(widthScalar, 2);
     return 1 / ((Math.pow(WSModifier, Math.pow(-1 * x, 2))));
 }
-function getVector(angle, scalar) {
-    console.log("scalar:" + scalar.toFixed(3));
-    return { x: scalar * Math.cos(angle * (Math.PI / 180)), y: scalar * Math.sin(angle * (Math.PI / 180)), line: 0 };
+function vectorToCords(vec) {
+    return { x: vec.scalar * Math.cos(vec.angle * (Math.PI / 180)), y: vec.scalar * Math.sin(vec.angle * (Math.PI / 180)) };
 }
-function dist(x, y, p) {
-    return Math.sqrt(Math.pow(p.x - x, 2) + Math.pow(p.y - y, 2));
+function delta(p1, p2) {
+    return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
 }
-function genPoints() {
-    points = [];
-    //create points
-    var width = 70;
-    var height = 55;
-    var spacing = 1.2;
-    for (var iY = 0; iY < height; iY++) {
-        for (var iX = 0; iX < width; iX++) {
-            points.push({ x: iX * spacing, y: iY * spacing, line: iY });
+var cutoff = 99999;
+function render(points) {
+    return simP.map(function (sim) {
+        var sumDelta = vecP.map(function (vec) {
+            // console.log("I am running with point x:" + vec.p.x + " y:" + vec.p.y);
+            var singleDelta = delta(vec.p, sim.p);
+            if (singleDelta > cutoff) {
+                return { x: 0, y: 0 };
+            }
+            var vecPoint = vectorToCords(vec);
+            return { x: vecPoint.x * f(singleDelta), y: vecPoint.y * f(singleDelta) };
+        }).reduce(function (a, b) { return sumPoints(a, b); });
+        return { p: sumPoints(sim.p, sumDelta), line: sim.line };
+    });
+}
+function sumPoints(a, b) {
+    return { x: a.x + b.x, y: a.y + b.y };
+}
+function lines(points) {
+    console.log("Lenght is: " + points.length);
+    // c.beginPath();
+    // c.lineTo(points[0].p.x*GLOBAL_SPACING,points[0].p.y*GLOBAL_SPACING)
+    addLines(points);
+}
+// i fucked up on making the "line" element so this is really confusing, but it works so just don't touch it
+function addLines(points) {
+    //remove odd generated points (at the end of every line there is a point which is set on the next line, that shouldn't be there)
+    for (var i = 0; i < points.length - 1; i++) {
+        if (points[i].line != points[i + 1].line) {
+            points.splice(i, 1);
         }
+    }
+    //previous method skips last point so we just pop it off
+    points.pop();
+    var S = GLOBAL_SPACING;
+    var prevLine = -1;
+    var p;
+    //this is all we should really need, but bc. of fuckup we had to do some other stuff
+    //if previous line is not the same as current line we must be at start of new line
+    //so we end the previous line and begin a new one
+    for (var _i = 0, points_1 = points; _i < points_1.length; _i++) {
+        p = points_1[_i];
+        console.log(p.p);
+        if (p.line != prevLine) {
+            c.stroke();
+            c.closePath();
+            c.beginPath();
+        }
+        else {
+            c.lineTo(p.p.x * S, p.p.y * S);
+        }
+        prevLine = p.line;
     }
 }
 var cycle = 0;
 function button() {
     switch (cycle) {
         case 0:
-            document.getElementById("info").innerHTML = "Push vetically";
-            genPoints();
-            reDraw();
+            document.getElementById("info").innerHTML = "Push simP to generate wave illusion";
+            clear();
+            draw(simP);
             break;
         case 1:
-            document.getElementById("info").innerHTML = "Push points to generate wave illusion";
-            verticalPush(-5,6);
-            verticalPush(20,6);
-            verticalPush(45,6);
-            verticalPush(70,6);
-            verticalPush(95,6);
-            reDraw();
-            break;
-            
-        case 2:
-            document.getElementById("info").innerHTML = "Now draw line between points";
+            document.getElementById("info").innerHTML = "Now draw line between simP";
             clear();
-            push(20, 30, 30);
-            push(70, 30, 190);
-            push(10, 40, 270);
-            push(50, 10, 340);
-            push(23, 10, 60);
-            push(50, 60, 120);
-            push(37, 40, 50);
-            push(65, 40, 70);
-            push(60, 24, 20);
-            push(56, 18, 103);
-            push(10, 60, 325);
-            
-            reDraw();
+            draw(render(simP));
+            // push(20,30,30);
+            // push(70,30,190);
+            // push(10,40,270);
+            // push(50,10,340);
+            // push(23,10,60);
+            // push(50,60,120);
+            // push(37,40,50);
+            // push(65,40,70);
+            // push(60,24,20);
+            // push(56,18,103);
+            // push(10,60,325);
+            // reDraw();
             break;
-        case 3:
+        case 2:
             document.getElementById("info").innerHTML = "Et voila! Wave pattern generated";
             clear();
-            addLines();
+            lines(render(simP));
             break;
     }
-    cycle = (cycle + 1) % 4;
+    cycle = (cycle + 1) % 3;
 }
-function addLines() {
-    var S = 10;
-    // c.beginPath();aa
-    // c.moveTo(points[0].x*S,points[0].y*S);
-    var prevLine = -1;
-    var p;
-    for (var _i = 0, points_1 = points; _i < points_1.length; _i++) {
-        p = points_1[_i];
-        if (p.line != prevLine) {
-            c.stroke();
-            c.closePath();
-            c.beginPath();
-            c.moveTo(p.x * S, p.y * S);
-        }
-        else {
-            c.lineTo(p.x * S, p.y * S);
-        }
-        prevLine = p.line;
-    }
-    c.stroke();
+//return an array of number from bottom to top number
+function range(bottom, top) {
+    return Array.from(new Array(top + bottom), function (val, index) { return index + 1 + bottom; });
+}
+function genPoints(wi, hi, col, row) {
+    return range(0, row * col).map(function (i) {
+        var x = i % col;
+        var y = Math.ceil(i / col);
+        return { x: x, y: y };
+    }).map(function (p) {
+        return { x: p.x * (wi / col), y: p.y * (hi / row) };
+    });
 }
