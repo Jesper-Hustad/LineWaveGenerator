@@ -108,6 +108,8 @@ function line(points) {
     }
 }
 var resSlider = document.getElementById("resRange");
+var rotSlider = document.getElementById("rotRange");
+var scalSlider = document.getElementById("scalRange");
 var res = document.getElementById("res");
 res.innerHTML = resSlider.value;
 resSlider.oninput = function () {
@@ -116,18 +118,24 @@ resSlider.oninput = function () {
     clear();
     update(SETTING);
 };
-//   let rotSlider = document.getElementById("rotRange");
-//   resSlider.oninput = function() {
-//     SETTING.rotOffset = parseInt(this.value);
-//     clear();
-//     update(SETTING);
-//   }
+rotSlider.oninput = function () {
+    SETTING.rotOffset = parseInt(this.value) * 3.6;
+    console.log(SETTING.rotOffset);
+    clear();
+    update(SETTING);
+};
+scalSlider.oninput = function () {
+    SETTING.scalScal = parseInt(this.value) / 50;
+    console.log(SETTING.scalScal);
+    clear();
+    update(SETTING);
+};
 var rotOffset = 3;
 var rotScal = 4;
 var scalOffset = 1;
 var scalScal = 2;
 function update(s) {
-    lines(render(generateSimP(s.resolution), vecModifier(vecP, s.rotScal * Math.cos(s.rotOffset), s.scalScal * Math.cos(s.scalOffset))));
+    lines(render(generateSimP(s.resolution), vecP.map(function (v) { return { p: v.p, angle: v.angle + SETTING.rotOffset, scalar: v.scalar * SETTING.scalScal }; })));
 }
 function vecModifier(vectors, rot, scalar) {
     return vectors.map(function (v) { return { p: v.p, angle: v.angle + rot, scalar: v.scalar * scalar }; });

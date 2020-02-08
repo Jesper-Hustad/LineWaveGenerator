@@ -162,6 +162,8 @@ function line(points:sim[]):void{
 
 
 let resSlider = document.getElementById("resRange");
+let rotSlider = document.getElementById("rotRange");
+let scalSlider = document.getElementById("scalRange");
 let res = document.getElementById("res");
 
 res.innerHTML = resSlider.value;
@@ -172,12 +174,19 @@ resSlider.oninput = function() {
     update(SETTING);
   }
 
-//   let rotSlider = document.getElementById("rotRange");
-//   resSlider.oninput = function() {
-//     SETTING.rotOffset = parseInt(this.value);
-//     clear();
-//     update(SETTING);
-//   }
+  rotSlider.oninput = function() {
+    SETTING.rotOffset = parseInt(this.value)*3.6;
+    console.log(SETTING.rotOffset);
+    clear();
+    update(SETTING);
+  }
+
+  scalSlider.oninput = function() {
+    SETTING.scalScal = parseInt(this.value)/50;
+    console.log(SETTING.scalScal);
+    clear();
+    update(SETTING);
+  }
 
 
 let rotOffset = 3;
@@ -189,7 +198,7 @@ let scalScal = 2;
 
 
 function update(s:Settings){
-    lines(render(generateSimP(s.resolution),vecModifier(vecP,s.rotScal*Math.cos(s.rotOffset),s.scalScal*Math.cos(s.scalOffset))));
+    lines(render(generateSimP(s.resolution),vecP.map(v => {return {p:v.p,angle:v.angle+SETTING.rotOffset,scalar:v.scalar*SETTING.scalScal}})));
 }
 
 interface Settings {
@@ -232,7 +241,6 @@ function button():void{
             break;
 
     }
-
 
     cycle= (cycle+1)%3;
 }
