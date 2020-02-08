@@ -2,6 +2,22 @@ console.log("hello wOOOrld")
 
 const GLOBAL_SPACING = 10;
 
+let SETTING : Settings =  {
+
+    rotOffset : 0,
+    rotScal : 1,
+
+    scalOffset : 0,
+    scalScal : 1,
+
+    resolution : 1,
+
+    pushStrenght: 9,
+    pushWidth : 10   
+
+}
+
+
 //establish colors
 const backgroundColor = "#c4c4c4";
 const primaryColor = "#62858a";
@@ -42,7 +58,7 @@ let resolution = 0.5; //more resolution means higher quality, but slower. Betwee
 var simP: sim[] = genPoints(width,height,Math.round(width*resolution),Math.round(height*resolution)).map(p =>{return {p:{x:p.x,y:p.y},line:p.y}});
 var vecP: vec[] = genPoints(width,height,collums,rows).map(p => {return {p:p,angle:Math.random() * 360,scalar:8}});
 
-function generateSimP():sim[]{
+function generateSimP(resolution:number):sim[]{
     return genPoints(width,height,Math.round(width*resolution),Math.round(height*resolution)).map(p =>{return {p:{x:p.x,y:p.y},line:p.y}});
 }
 
@@ -105,12 +121,12 @@ function lines(points:sim[]){
     // console.log("Lenght is: " + points.length);
     // c.beginPath();
     // c.lineTo(points[0].p.x*GLOBAL_SPACING,points[0].p.y*GLOBAL_SPACING)
-    addLines(points);
+    line(points);
 }
 
 
 // i fucked up on making the "line" element so this is really confusing, but it works so just don't touch it
-function addLines(points:sim[]):void{
+function line(points:sim[]):void{
 
     //remove odd generated points (at the end of every line there is a point which is set on the next line, that shouldn't be there)
     for (let i = 0; i < points.length-1; i++) {
@@ -142,9 +158,8 @@ function addLines(points:sim[]):void{
         }
         prevLine = p.line;
     }
-
-
 }
+
 
 let resSlider = document.getElementById("resRange");
 let res = document.getElementById("res");
@@ -152,17 +167,48 @@ let res = document.getElementById("res");
 res.innerHTML = resSlider.value;
 resSlider.oninput = function() {
     res.innerHTML = this.value;
-    resolution = parseInt(this.value)/100;
+    SETTING.resolution = parseInt(this.value)/100;
     clear();
-    addLines(render(generateSimP(),vecP));
+    update(SETTING);
   }
 
-  resSlider.onmouseup = function(){
-    resolution = parseInt(this.value)/100;
-    console.log(resolution);
-    clear();
-    draw(render(generateSimP(),vecP));
-  }
+//   let rotSlider = document.getElementById("rotRange");
+//   resSlider.oninput = function() {
+//     SETTING.rotOffset = parseInt(this.value);
+//     clear();
+//     update(SETTING);
+//   }
+
+
+let rotOffset = 3;
+let rotScal = 4;
+
+let scalOffset = 1;
+let scalScal = 2;
+
+
+
+function update(s:Settings){
+    lines(render(generateSimP(s.resolution),vecModifier(vecP,s.rotScal*Math.cos(s.rotOffset),s.scalScal*Math.cos(s.scalOffset))));
+}
+
+interface Settings {
+    rotOffset : number;
+    rotScal : number;
+
+    scalOffset : number;
+    scalScal : number;
+
+    resolution : number;
+
+    pushStrenght: number;
+    pushWidth : number;    
+}
+
+
+function vecModifier(vectors:vec[],rot:number,scalar:number):vec[]{
+    return vectors.map(v => {return {p:v.p,angle:v.angle+rot,scalar:v.scalar*scalar};})
+} 
 
 let cycle = 0;
 function button():void{
