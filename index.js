@@ -107,18 +107,6 @@ function button() {
             document.getElementById("info").innerHTML = "Now draw line between simP";
             clear();
             draw(render(simP));
-            // push(20,30,30);
-            // push(70,30,190);
-            // push(10,40,270);
-            // push(50,10,340);
-            // push(23,10,60);
-            // push(50,60,120);
-            // push(37,40,50);
-            // push(65,40,70);
-            // push(60,24,20);
-            // push(56,18,103);
-            // push(10,60,325);
-            // reDraw();
             break;
         case 2:
             document.getElementById("info").innerHTML = "Et voila! Wave pattern generated";
