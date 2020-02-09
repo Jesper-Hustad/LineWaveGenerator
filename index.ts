@@ -1,3 +1,32 @@
+interface sim {
+    p:point;
+    line: number;
+}
+
+interface vec {
+    p:point
+    angle:number;
+    scalar:number;
+}
+
+interface point {
+    x:number;
+    y:number;
+}
+
+interface Settings {
+    rotOffset : number;
+    rotScal : number;
+
+    scalOffset : number;
+    scalScal : number;
+
+    resolution : number;
+
+    pushStrenght: number;
+    pushWidth : number;    
+}
+
 console.log("hello wOOOrld")
 
 const GLOBAL_SPACING = 10;
@@ -16,7 +45,6 @@ let SETTING : Settings =  {
     pushWidth : 10   
 
 }
-
 
 //establish colors
 const backgroundColor = "#c4c4c4";
@@ -101,21 +129,7 @@ function sumPoints(a:point,b:point):point{
     return {x:a.x+b.x,y:a.y+b.y};
 }
 
-interface sim {
-    p:point;
-    line: number;
-}
 
-interface vec {
-    p:point
-    angle:number;
-    scalar:number;
-}
-
-interface point {
-    x:number;
-    y:number;
-}
 
 function lines(points:sim[]){
     // console.log("Lenght is: " + points.length);
@@ -166,9 +180,8 @@ let rotSlider = document.getElementById("rotRange");
 let scalSlider = document.getElementById("scalRange");
 let res = document.getElementById("res");
 
-res.innerHTML = resSlider.value;
 resSlider.oninput = function() {
-    res.innerHTML = this.value;
+    console.log(SETTING.resolution);
     SETTING.resolution = parseInt(this.value)/100;
     clear();
     update(SETTING);
@@ -201,18 +214,7 @@ function update(s:Settings){
     lines(render(generateSimP(s.resolution),vecP.map(v => {return {p:v.p,angle:v.angle+SETTING.rotOffset,scalar:v.scalar*SETTING.scalScal}})));
 }
 
-interface Settings {
-    rotOffset : number;
-    rotScal : number;
 
-    scalOffset : number;
-    scalScal : number;
-
-    resolution : number;
-
-    pushStrenght: number;
-    pushWidth : number;    
-}
 
 
 function vecModifier(vectors:vec[],rot:number,scalar:number):vec[]{
@@ -221,35 +223,17 @@ function vecModifier(vectors:vec[],rot:number,scalar:number):vec[]{
 
 let cycle = 0;
 function button():void{
-    switch(cycle){
-        case 0:
-            document.getElementById("info").innerHTML = "Push simP to generate wave illusion";
 
-            clear();
-            draw(simP);
-            break;
+    vecP = genPoints(width,height,collums,rows).map(p => {return {p:p,angle:Math.random() * 360,scalar:8}});
+    clear();
+    update(SETTING);
 
-        case 1:
-            document.getElementById("info").innerHTML = "Now draw line between simP";
-            clear();
-            draw(render(simP,vecP));
-            break;
-        case 2:
-            document.getElementById("info").innerHTML = "Et voila! Wave pattern generated";
-            clear();
-            lines(render(simP,vecP));
-            break;
-
-    }
-
-    cycle= (cycle+1)%3;
 }
 
 //return an array of number from bottom to top number
 function range(bottom : number,top:number):number[]{
     return Array.from(new Array(top + bottom),(val,index)=>index+1+bottom);
 }
-
 
 function genPoints(wi:number,hi:number,col:number,row:number):point[]{
     

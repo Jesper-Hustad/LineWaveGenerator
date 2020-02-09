@@ -11,28 +11,51 @@
 
 
 <body>
-    <p id="info" class="sansserif">Generate point matrix</p>
-
-    <div id='d1' style="position:absolute; top:100px; left:10px; z-index:0">  
-        <canvas id='canvas' width='200' height='100'>
-              Your browser does not support HTML5 Canvas.
-        </canvas>
-    </div>
-
-    
-    <button onclick="button();">Next stage</button>
-    
-    <div class="inf">
-        <p>Resolution: <span id="res"></span></p>
+    <div class="title">
+        <h1 >Abstract wave lines generator</h1>
     </div>
 
 
-    <input type="range" min="1" max="100" value="50" class="slider" id="resRange">
+    <section id="title">
+        <button onclick="button();">New vectors</button>
+    </section>
 
-    <input type="range" min="1" max="100" value="50" class="slider" id="rotRange">
+        <div class="row center">
 
-    <input type="range" min="1" max="100" value="50" class="slider" id="scalRange">
+            <div class="column">
+                <p>Resoultion thingy</p>
+                <input type="range" min="1" max="100" value="50" class="slider" id="resRange">
+            </div>
 
+            <div class="column">
+                <p>Rotation slider</p>
+                <input type="range" min="1" max="100" value="50" class="slider" id="rotRange">
+            </div>
+
+            <div class="column">
+                <p>Scale slider</p>
+                <input type="range" min="1" max="100" value="50" class="slider" id="scalRange">
+            </div>
+
+            <div class="column">
+                <p>Another slider</p>
+                <input type="range" min="1" max="100" value="50" class="slider" id="xRange">
+            </div>
+
+            <div class="columnEnd">
+            <p> </p>
+            </div>
+        </div>
+
+
+
+<section id="sec">
+  <div id='d1' class="canvas center">  
+    <canvas id='canvas' width='200' height='100'>
+          Your browser does not support HTML5 Canvas.
+    </canvas>
+</div>
+</section>
 
     <script src="index.js"></script>
 </body>

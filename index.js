@@ -111,9 +111,8 @@ var resSlider = document.getElementById("resRange");
 var rotSlider = document.getElementById("rotRange");
 var scalSlider = document.getElementById("scalRange");
 var res = document.getElementById("res");
-res.innerHTML = resSlider.value;
 resSlider.oninput = function () {
-    res.innerHTML = this.value;
+    console.log(SETTING.resolution);
     SETTING.resolution = parseInt(this.value) / 100;
     clear();
     update(SETTING);
@@ -142,24 +141,9 @@ function vecModifier(vectors, rot, scalar) {
 }
 var cycle = 0;
 function button() {
-    switch (cycle) {
-        case 0:
-            document.getElementById("info").innerHTML = "Push simP to generate wave illusion";
-            clear();
-            draw(simP);
-            break;
-        case 1:
-            document.getElementById("info").innerHTML = "Now draw line between simP";
-            clear();
-            draw(render(simP, vecP));
-            break;
-        case 2:
-            document.getElementById("info").innerHTML = "Et voila! Wave pattern generated";
-            clear();
-            lines(render(simP, vecP));
-            break;
-    }
-    cycle = (cycle + 1) % 3;
+    vecP = genPoints(width, height, collums, rows).map(function (p) { return { p: p, angle: Math.random() * 360, scalar: 8 }; });
+    clear();
+    update(SETTING);
 }
 //return an array of number from bottom to top number
 function range(bottom, top) {

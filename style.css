@@ -9,11 +9,17 @@ p.sansserif {
     margin-right: 3;
   }
 
-  button {
-    text-align:right;
-    float: left;
-    padding-left: 10;
-    padding-right: 10;
+  h1{
+    font-family: Arial, Helvetica, sans-serif;
+    display: inline-block;
+    width: 460px;
+  }
+
+  .button {
+
+        position: absolute;
+        top: 50%;
+
   }
 
   .inf {
@@ -25,3 +31,52 @@ p.sansserif {
     border-left: 10px;
     
   }
+
+  .column {
+    float: left;
+    /* table-layout: fixed; */
+
+
+    margin: auto;
+    width: 160px;
+  }
+
+  .columnEnd {
+    float: right;
+    width: 100%;
+  }
+  
+  Clear floats after the columns
+  .row:after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+
+  canvas {
+
+    display: block;
+  }
+
+  #canvasCenter{
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  #sec{
+display: table;
+  }
+
+  .center {
+    margin: auto;
+    width: 50%;
+    text-align: center;
+  }
+
+  .title {
+    text-align: center;
+    /* border:3px solid blue; */
+  }
+
