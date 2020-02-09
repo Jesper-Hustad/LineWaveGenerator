@@ -15,10 +15,33 @@
         <h1 >Abstract wave lines generator</h1>
     </div>
 
+    <div class="row center">
 
-    <section id="title">
-        <button onclick="button();">New vectors</button>
-    </section>
+
+        <div class="column"> 
+            <p>Toggle points</p>
+            <label><input type="checkbox" name="show" value="dots" id=dotsBox onchange="togglePoints();"></label>
+        </div>
+
+        <div class="column">
+            <p>Toggle lines</p>
+            <label><input type="checkbox" name="show" value="dots" id=linesBox onchange="toggleLines();" checked="checked"></label>
+        </div>
+
+        <div class="column">
+            <p>Generates new vectors</p>
+                <button onclick="button();">New vectors</button>
+        </div>
+
+
+        <div class="column">
+            <p>Download as a png</p>
+            <a id="download" download="wavyLines.png">
+                <button type="button" onClick="download()">Download</button>
+            </a>
+        </div>
+
+    </div>
 
         <div class="row center">
 
@@ -38,8 +61,8 @@
             </div>
 
             <div class="column">
-                <p>Another slider</p>
-                <input type="range" min="1" max="100" value="50" class="slider" id="xRange">
+                <p>Vector function</p>
+                <input type="range" min="1" max="100" value="50" class="slider" id="fxRange">
             </div>
 
             <div class="columnEnd">
@@ -50,7 +73,7 @@
 
 
 <section id="sec">
-  <div id='d1' class="canvas center">  
+  <div id='d1'  style = "text-align:center;"">  
     <canvas id='canvas' width='200' height='100'>
           Your browser does not support HTML5 Canvas.
     </canvas>

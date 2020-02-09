@@ -27,9 +27,6 @@ interface Settings {
     pushWidth : number;    
 }
 
-console.log("hello wOOOrld")
-
-const GLOBAL_SPACING = 10;
 
 let SETTING : Settings =  {
 
@@ -46,9 +43,17 @@ let SETTING : Settings =  {
 
 }
 
+const GLOBAL_SPACING = 8;
+
+let rotOffset = 3;
+let rotScal = 4;
+
+let scalOffset = 1;
+let scalScal = 2;
+
 //establish colors
 const backgroundColor = "#c4c4c4";
-const primaryColor = "#62858a";
+const primaryColor = "#32bde3";
 
 
 //create canvas
@@ -63,19 +68,23 @@ c.fillStyle = primaryColor;
 
 function clear(): void{
     c.clearRect(0, 0, canvas.width, canvas.height);
-    c.fillStyle = backgroundColor;
+    c.fillStyle = primaryColor;
 }
 
 function drawPixel(x:number,y:number): void{
-    c.fillRect(x*GLOBAL_SPACING,y*GLOBAL_SPACING,GLOBAL_SPACING,GLOBAL_SPACING);
+    const pixelSize = 6
+    c.fillRect(((x*GLOBAL_SPACING)-pixelSize/2), (y*GLOBAL_SPACING)-pixelSize/2, pixelSize, pixelSize);
 }
 
 function draw(simulatedPoints:sim[]){
     simulatedPoints.forEach(s => drawPixel(s.p.x,s.p.y));
 }
 
-const height = 70;
-const width = 80;
+const drawPix = (s:point) => drawPixel(s.x,s.y);
+
+
+const height = 100;
+const width = 130;
 const rows = 4;
 const collums = 3;
 let resolution = 0.5; //more resolution means higher quality, but slower. Between {0,1}
@@ -87,8 +96,10 @@ var simP: sim[] = genPoints(width,height,Math.round(width*resolution),Math.round
 var vecP: vec[] = genPoints(width,height,collums,rows).map(p => {return {p:p,angle:Math.random() * 360,scalar:8}});
 
 function generateSimP(resolution:number):sim[]{
-    return genPoints(width,height,Math.round(width*resolution),Math.round(height*resolution)).map(p =>{return {p:{x:p.x,y:p.y},line:p.y}});
+    return genPoints(width,height,Math.round(width*resolution),Math.round(height*resolution)).map(pointToSim);
 }
+
+let pointToSim = (point:point) : sim =>  { return {p:{x:point.x, y:point.y}, line:point.y};}
 
 
 let strenght = 9; //the distance of the push
@@ -101,7 +112,7 @@ function f(x:number):number{
     return 1/((Math.pow(WSModifier,Math.pow(-1*x,2))));
 }
 
-function vectorToCords(vec:vec):point{
+function vectorToOffset(vec:vec):point{
     return {x:vec.scalar*Math.cos(vec.angle*(Math.PI/180)),y:vec.scalar*Math.sin(vec.angle*(Math.PI/180))};
 }
 
@@ -111,32 +122,28 @@ function delta(p1:point,p2:point):number{
 
 let cutoff = 99999;
 
+
 function render(points:sim[],vectors:vec[]):sim[]{
     return points.map(sim => {
         
         const sumDelta = vectors.map(vec => {
-            // console.log("I am running with point x:" + vec.p.x + " y:" + vec.p.y);
+
+            //distance from point to vector
             const singleDelta = delta(vec.p,sim.p);
+
             if(singleDelta >cutoff){return {x:0,y:0};}
-            const vecPoint = vectorToCords(vec);
-            return {x:vecPoint.x*f(singleDelta),y:vecPoint.y*f(singleDelta)};
+
+            const scalStr = f(singleDelta) //scalar strenght from wave function
+            
+            const vecPoint = vectorToOffset(vec); //the offset from the vector (from rotation and scalar)
+
+
+            return {x:vecPoint.x*scalStr,y:vecPoint.y*scalStr};
         }).reduce((a,b)=> {return sumPoints(a,b);});
         return {p:sumPoints(sim.p,sumDelta),line:sim.line};
     })
 }
 
-function sumPoints(a:point,b:point):point{
-    return {x:a.x+b.x,y:a.y+b.y};
-}
-
-
-
-function lines(points:sim[]){
-    // console.log("Lenght is: " + points.length);
-    // c.beginPath();
-    // c.lineTo(points[0].p.x*GLOBAL_SPACING,points[0].p.y*GLOBAL_SPACING)
-    line(points);
-}
 
 
 // i fucked up on making the "line" element so this is really confusing, but it works so just don't touch it
@@ -174,47 +181,15 @@ function line(points:sim[]):void{
     }
 }
 
-
-let resSlider = document.getElementById("resRange");
-let rotSlider = document.getElementById("rotRange");
-let scalSlider = document.getElementById("scalRange");
-let res = document.getElementById("res");
-
-resSlider.oninput = function() {
-    console.log(SETTING.resolution);
-    SETTING.resolution = parseInt(this.value)/100;
-    clear();
-    update(SETTING);
-  }
-
-  rotSlider.oninput = function() {
-    SETTING.rotOffset = parseInt(this.value)*3.6;
-    console.log(SETTING.rotOffset);
-    clear();
-    update(SETTING);
-  }
-
-  scalSlider.oninput = function() {
-    SETTING.scalScal = parseInt(this.value)/50;
-    console.log(SETTING.scalScal);
-    clear();
-    update(SETTING);
-  }
-
-
-let rotOffset = 3;
-let rotScal = 4;
-
-let scalOffset = 1;
-let scalScal = 2;
-
-
+let displayPoints = false;
+let displayLines = true;
 
 function update(s:Settings){
-    lines(render(generateSimP(s.resolution),vecP.map(v => {return {p:v.p,angle:v.angle+SETTING.rotOffset,scalar:v.scalar*SETTING.scalScal}})));
+    clear();
+    const renderedPoints = render(generateSimP(s.resolution),vecP.map(v => {return {p:v.p,angle:v.angle+SETTING.rotOffset,scalar:v.scalar*SETTING.scalScal}}));
+    if(displayLines) line(renderedPoints);
+    if(displayPoints) renderedPoints.map(s => s.p).forEach(drawPix);
 }
-
-
 
 
 function vecModifier(vectors:vec[],rot:number,scalar:number):vec[]{
@@ -230,10 +205,6 @@ function button():void{
 
 }
 
-//return an array of number from bottom to top number
-function range(bottom : number,top:number):number[]{
-    return Array.from(new Array(top + bottom),(val,index)=>index+1+bottom);
-}
 
 function genPoints(wi:number,hi:number,col:number,row:number):point[]{
     
@@ -245,3 +216,72 @@ function genPoints(wi:number,hi:number,col:number,row:number):point[]{
         {return {x:p.x*(wi/col),y:p.y*(hi/row)};
     });
 }
+// HELPER FUNCTIONS -----------------------------------------------
+
+    //return an array of number from bottom to top number
+    function range(bottom : number,top:number):number[]{
+        return Array.from(new Array(top + bottom),(val,index)=>index+1+bottom);
+    }
+
+    //adds two points together
+    function sumPoints(a:point,b:point):point{
+        return {x:a.x+b.x,y:a.y+b.y};
+    }
+
+    let zip = (a,b) => a.map((x,i) => [x,b[i]]);
+
+
+// USER FUNCTIONALITY -----------------------------------------------
+
+let dotBox = document.getElementById("dotsBox");
+let resSlider = document.getElementById("resRange");
+let rotSlider = document.getElementById("rotRange");
+let scalSlider = document.getElementById("scalRange");
+let fxSlider = document.getElementById("fxRange");
+let res = document.getElementById("res");
+
+
+function togglePoints(){
+    displayPoints = !displayPoints;
+    update(SETTING);
+}
+
+function toggleLines(){
+    displayLines = !displayLines;
+    update(SETTING);
+}
+
+resSlider.oninput = function() {
+    SETTING.resolution = parseInt(this.value)/100;
+    update(SETTING);
+  }
+
+  rotSlider.oninput = function() {
+    SETTING.rotOffset = parseInt(this.value)*3.6;
+    update(SETTING);
+  }
+
+  scalSlider.oninput = function() {
+    SETTING.scalScal = parseInt(this.value)/50;
+    update(SETTING);
+  }
+
+  fxSlider.oninput = function() {
+    widthScalar = (0.0003 * Math.pow(parseInt(this.value)/5,4) )+ 1 ;
+    console.log(widthScalar);
+    update(SETTING);
+  }
+
+// DOWNLOAD FUNCTION -----------------------------------------------
+
+function download() {
+    var download = document.getElementById("download");
+    var image = document.getElementById("canvas").toDataURL("image/png").replace("image/png", "image/octet-stream");
+    download.setAttribute("href", image);
+    }
+
+
+//run once when webpage loads
+window.onload = function(){
+    update(SETTING);
+} 
