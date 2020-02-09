@@ -27,6 +27,7 @@ interface Settings {
     pushWidth : number;    
 }
 
+// DEFINING VARIABLES -----------------------------
 
 let SETTING : Settings =  {
 
@@ -40,10 +41,19 @@ let SETTING : Settings =  {
 
     pushStrenght: 9,
     pushWidth : 10   
-
 }
 
 const GLOBAL_SPACING = 8;
+
+const pixelSize = 6
+
+//push effects
+let strenght = 9; //the distance of the push
+let widthScalar = 10; //the reach of the pusher
+
+//boolean what to show
+let displayPoints = false;
+let displayLines = true;
 
 let rotOffset = 3;
 let rotScal = 4;
@@ -54,6 +64,12 @@ let scalScal = 2;
 //establish colors
 const backgroundColor = "#c4c4c4";
 const primaryColor = "#32bde3";
+
+const height = 100;
+const width = 130;
+const rows = 4;
+const collums = 3;
+let resolution = 0.5; //more resolution means higher quality, but slower. Between {0,1}
 
 
 //create canvas
@@ -66,84 +82,68 @@ c.fillRect(0, 0, canvas.width, canvas.height);
 c.fillStyle = primaryColor;
 
 
-function clear(): void{
-    c.clearRect(0, 0, canvas.width, canvas.height);
-    c.fillStyle = primaryColor;
-}
-
-function drawPixel(x:number,y:number): void{
-    const pixelSize = 6
-    c.fillRect(((x*GLOBAL_SPACING)-pixelSize/2), (y*GLOBAL_SPACING)-pixelSize/2, pixelSize, pixelSize);
-}
-
-function draw(simulatedPoints:sim[]){
-    simulatedPoints.forEach(s => drawPixel(s.p.x,s.p.y));
-}
-
-const drawPix = (s:point) => drawPixel(s.x,s.y);
 
 
-const height = 100;
-const width = 130;
-const rows = 4;
-const collums = 3;
-let resolution = 0.5; //more resolution means higher quality, but slower. Between {0,1}
+// CODE ------------------------------------
+
+let genPoints = (wi:number,hi:number,col:number,row:number):point[] => 
+    
+        Array.from(new Array(row*col),(val,index)=>index+1).map(i => {
+        const x = i%col;
+        const y = Math.ceil(i/col);
+        return {x:x,y:y};
+    }).map(p => 
+        {return {x:p.x*(wi/col),y:p.y*(hi/row)};
+    });
 
 
-//for optimization, may want to use: Math.round(num * 100) / 100 to round to 2nd decimal!
 
 var simP: sim[] = genPoints(width,height,Math.round(width*resolution),Math.round(height*resolution)).map(p =>{return {p:{x:p.x,y:p.y},line:p.y}});
 var vecP: vec[] = genPoints(width,height,collums,rows).map(p => {return {p:p,angle:Math.random() * 360,scalar:8}});
 
-function generateSimP(resolution:number):sim[]{
-    return genPoints(width,height,Math.round(width*resolution),Math.round(height*resolution)).map(pointToSim);
+
+
+
+//Adds the vector effect to the points
+let simulate = (points:sim[],vectors:vec[]):sim[] => 
+
+    //go trough every point
+    points.map(sim => {
+        
+        //get the amount of offset applied to the point by going through every vector and adding it
+        const sumVectorOffset = vectors.map(vec => addVector(vec,sim.p)).reduce((a,b)=> sumPoints(a,b));
+
+        //add the sum of offset to the point
+        return {p:sumPoints(sim.p,sumVectorOffset),line:sim.line};
+    })
+
+
+//adds a vectors offset to a single points
+let addVector = (vec:vec,point:point) => {
+
+    const singleDelta = distance(vec.p,point); //distance from point to vector
+
+    const scalStr = f(singleDelta) //scalar strenght from wave function, is a function of distance
+
+    const vecPoint = vectorToOffset(vec) //the offset from the vector (from rotation and scalar)
+
+    //calculated offset of current vector
+    return {x:vecPoint.x*scalStr,y:vecPoint.y*scalStr};
+
 }
 
-let pointToSim = (point:point) : sim =>  { return {p:{x:point.x, y:point.y}, line:point.y};}
+//from polar form to x,y
+let vectorToOffset = (vec:vec) :point => {return {x:vec.scalar*Math.cos(vec.angle*(Math.PI/180)),y:vec.scalar*Math.sin(vec.angle*(Math.PI/180))}};
+
+//distance formula
+let distance = (p1:point,p2:point) => Math.sqrt(Math.pow(p2.x-p1.x,2)+Math.pow(p2.y-p1.y,2))
 
 
-let strenght = 9; //the distance of the push
-let widthScalar = 10; //the reach of the pusher
-
-
-function f(x:number):number{
-
+// see the graph -> https://www.geogebra.org/graphing/eqterv22
+let f = (x:number):number => {
     const WSModifier = 1 + 1/Math.pow(widthScalar,2);
     return 1/((Math.pow(WSModifier,Math.pow(-1*x,2))));
 }
-
-function vectorToOffset(vec:vec):point{
-    return {x:vec.scalar*Math.cos(vec.angle*(Math.PI/180)),y:vec.scalar*Math.sin(vec.angle*(Math.PI/180))};
-}
-
-function delta(p1:point,p2:point):number{
-    return Math.sqrt(Math.pow(p2.x-p1.x,2)+Math.pow(p2.y-p1.y,2));
-}
-
-let cutoff = 99999;
-
-
-function render(points:sim[],vectors:vec[]):sim[]{
-    return points.map(sim => {
-        
-        const sumDelta = vectors.map(vec => {
-
-            //distance from point to vector
-            const singleDelta = delta(vec.p,sim.p);
-
-            if(singleDelta >cutoff){return {x:0,y:0};}
-
-            const scalStr = f(singleDelta) //scalar strenght from wave function
-            
-            const vecPoint = vectorToOffset(vec); //the offset from the vector (from rotation and scalar)
-
-
-            return {x:vecPoint.x*scalStr,y:vecPoint.y*scalStr};
-        }).reduce((a,b)=> {return sumPoints(a,b);});
-        return {p:sumPoints(sim.p,sumDelta),line:sim.line};
-    })
-}
-
 
 
 // i fucked up on making the "line" element so this is really confusing, but it works so just don't touch it
@@ -181,47 +181,33 @@ function line(points:sim[]):void{
     }
 }
 
-let displayPoints = false;
-let displayLines = true;
+
+function generateSimP(resolution:number):sim[]{
+    return genPoints(width,height,Math.round(width*resolution),Math.round(height*resolution)).map((point:point) => { return {p:{x:point.x, y:point.y}, line:point.y}})
+}
 
 function update(s:Settings){
     clear();
-    const renderedPoints = render(generateSimP(s.resolution),vecP.map(v => {return {p:v.p,angle:v.angle+SETTING.rotOffset,scalar:v.scalar*SETTING.scalScal}}));
+    const renderedPoints = simulate(generateSimP(s.resolution),vecP.map(v => {return {p:v.p,angle:v.angle+SETTING.rotOffset,scalar:v.scalar*SETTING.scalScal}}));
     if(displayLines) line(renderedPoints);
     if(displayPoints) renderedPoints.map(s => s.p).forEach(drawPix);
 }
 
 
-function vecModifier(vectors:vec[],rot:number,scalar:number):vec[]{
-    return vectors.map(v => {return {p:v.p,angle:v.angle+rot,scalar:v.scalar*scalar};})
-} 
-
-let cycle = 0;
 function button():void{
 
     vecP = genPoints(width,height,collums,rows).map(p => {return {p:p,angle:Math.random() * 360,scalar:8}});
-    clear();
     update(SETTING);
-
 }
 
 
-function genPoints(wi:number,hi:number,col:number,row:number):point[]{
-    
-    return range(0,row*col).map(i => {
-        const x = i%col;
-        const y = Math.ceil(i/col);
-        return {x:x,y:y};
-    }).map(p => 
-        {return {x:p.x*(wi/col),y:p.y*(hi/row)};
-    });
-}
+
 // HELPER FUNCTIONS -----------------------------------------------
 
     //return an array of number from bottom to top number
-    function range(bottom : number,top:number):number[]{
-        return Array.from(new Array(top + bottom),(val,index)=>index+1+bottom);
-    }
+    // function range(bottom : number,top:number):number[]{
+    //     return Array.from(new Array(top + bottom),(val,index)=>index+1+bottom);
+    // }
 
     //adds two points together
     function sumPoints(a:point,b:point):point{
@@ -230,6 +216,15 @@ function genPoints(wi:number,hi:number,col:number,row:number):point[]{
 
     let zip = (a,b) => a.map((x,i) => [x,b[i]]);
 
+    function clear(): void{ c.clearRect(0, 0, canvas.width, canvas.height);}
+    
+    function drawPixel(x:number,y:number): void{    
+        c.fillRect(((x*GLOBAL_SPACING)-pixelSize/2), (y*GLOBAL_SPACING)-pixelSize/2, pixelSize, pixelSize);
+    }
+    
+    const drawPix = (s:point) => drawPixel(s.x,s.y);
+
+    // let pointToSim = (point:point) : sim =>  { return {p:{x:point.x, y:point.y}, line:point.y};}
 
 // USER FUNCTIONALITY -----------------------------------------------
 
