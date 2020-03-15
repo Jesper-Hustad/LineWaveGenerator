@@ -1,3 +1,5 @@
+// a comment
+
 interface sim {
     p:point;
     line: number;
