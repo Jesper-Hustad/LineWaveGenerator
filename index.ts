@@ -1,4 +1,4 @@
-// a comment
+// a
 
 interface sim {
     p:point;
@@ -165,6 +165,9 @@ function line(points:sim[]):void{
     let prevLine = -1;
     let p:sim;
 
+
+    points = points.filter(p=>p.line%2 == 0)
+
     //this is all we should really need, but bc. of fuckup we had to do some other stuff
 
     //if previous line is not the same as current line we must be at start of new line
@@ -230,12 +233,12 @@ function button():void{
 
 // USER FUNCTIONALITY -----------------------------------------------
 
-let dotBox = document.getElementById("dotsBox");
-let resSlider = document.getElementById("resRange");
-let rotSlider = document.getElementById("rotRange");
-let scalSlider = document.getElementById("scalRange");
-let fxSlider = document.getElementById("fxRange");
-let res = document.getElementById("res");
+let dotBox = <HTMLInputElement>document.getElementById("dotsBox");
+let resSlider = <HTMLInputElement>document.getElementById("resRange");
+let rotSlider = <HTMLInputElement>document.getElementById("rotRange");
+let scalSlider = <HTMLInputElement>document.getElementById("scalRange");
+let fxSlider = <HTMLInputElement>document.getElementById("fxRange");
+let res = <HTMLInputElement>document.getElementById("res");
 
 
 function togglePoints(){
