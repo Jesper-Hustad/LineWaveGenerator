@@ -1,4 +1,3 @@
-// a
 // DEFINING VARIABLES -----------------------------
 var SETTING = {
     rotOffset: 0,
@@ -89,7 +88,6 @@ function line(points) {
     var S = GLOBAL_SPACING;
     var prevLine = -1;
     var p;
-    points = points.filter(function (p) { return p.line % 2 == 0; });
     //this is all we should really need, but bc. of fuckup we had to do some other stuff
     //if previous line is not the same as current line we must be at start of new line
     //so we end the previous line and begin a new one
